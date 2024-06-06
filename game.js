@@ -1,54 +1,107 @@
-//Initialize objects / characters for the game
-var mc, mob;
+//Initialize the kaboom library
+kaboom({ 
+    width: 500, 
+    height: 500,
+    canvas: document.getElementById("gameCanvas"), 
+    font: "comic-sans",
+    background: [243, 255, 162],
+    stretch: false,
+    letterbox: false,
+});
 
-//Equivalent to setup, is called "onload" of the body in html
-function startGame() {
+//Load Assets:
+loadSprite("man", "blank-pfp.png");
+loadSprite("mc", "blue-square.png");
+loadSprite("slime", "blue-slime.png", {
+    sliceX: 1,
+    sliceY: 1,
+});
 
-    gameArea.create();
-    mc = new component(30, 30, "blue", 10, 10);
-    mob = new component(10, 10, "red", 500, 30);
-}
+//All Scenes:
+//Game scene
+scene("game", () =>{
+    const mc = add([
+        sprite("mc"),
+        pos(250, 250),
+        area(),
+        body(),
+    
+    ])
+    
+    add([
+        sprite("slime"),
+        pos(0, 0),
+        area({scale: 0.3, offset: 4}),
+        scale(7),
+        //body(),
+    ])
+});
 
-//Constructor function for our game objects, right now it only draws rectangles which is a little flawed
-function component(width, height, color, x, y) {
-    this.width = width;
-    this.height = height;
-    this.x = x;
-    this.y = y;
-    //function belonging to the objects called componenets that redraws them
-    this.update = function(){
-        ctx = gameArea.context;
-        ctx.fillStyle = color;
-        ctx.fillRect(this.x, this.y, this.width, this.height);
-    }
-}
+//Main page
+scene("main-page", ()=>{
 
-//It is an object for the background canvas(but different to characters)
+    addButton("Play", vec2(width()/2, height()-200), () => go("game"));
+    addButton("Level Select", vec2(width()/2, height()-140), () => go("level-select"));
+    addButton("Credits", vec2(width()/2, height()-80), () => go("credits"));
+});
 
-// Quote "The object myGameArea will have more properties and methods later in this tutorial.
-//The function startGame() invokes the method start() of the myGameArea object.
-//The start() method creates a <canvas> element and inserts it as the first childnode of the <body> element."
-var gameArea = {
-    canvas : document.createElement("canvas"),
-    //function of the gameArea object called create
-    create : function(){
-        this.canvas.width = 500;
-        this.canvas.height = 500;
-        this.context = this.canvas.getContext("2d");
-        document.body.insertBefore(this.canvas, document.body.childNodes[0]);
-        this.interval = setInterval(updateGameArea, 20);
-    },
-    //Function of the gameArea object called clear: erases the entire canvas space 
-    clear : function(){
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    }
-}
+//Credits page
+scene("credits", () =>{
+    add([
+        pos(width()/2,height()/4),
+        text("Leo Lao 2024", {
+            //width:500,
+            size:50,
+        }),
+        anchor("center"),
+        outline(4),
+        color(0,0,0),
+    ])
 
+    addButton("Back", vec2(width()/2, height()-100), () => go("main-page"));
+});
 
-function updateGameArea(){
-    gameArea.clear();
-    mc.update();
-    mob.update();
-    mc.x += 1;
-    mob.x -=1;
-}
+//Level Select page
+scene("level-select", () => {
+    addButton("Back", vec2(width()/2, height()-100), () => go("main-page"));
+});
+//Inital page load
+go("main-page");
+
+//Functions:
+function addButton(txt, p, f) {
+    // add a parent background object
+    const btn = add([
+        rect(240, 40, { radius: 8 }),
+        pos(p),
+        area(),
+        scale(1),
+        anchor("center"),
+        outline(4),
+    ])
+    // add a child object that displays the text
+    btn.add([
+        text(txt),
+        anchor("center"),
+        color(0, 0, 0),
+    ])
+    // onHoverUpdate() comes from area() component
+    // it runs every frame when the object is being hovered
+    btn.onHoverUpdate(() => {
+        btn.color = hsl2rgb(0.6, 0.7, 0.8)
+        btn.scale = vec2(1.2)
+        setCursor("pointer")
+    })
+    // onHoverEnd() comes from area() component
+    // it runs once when the object stopped being hovered
+    btn.onHoverEnd(() => {
+        btn.scale = vec2(1)
+        btn.color = rgb()
+    })
+    // onClick() comes from area() component
+    // it runs once when the object is clicked
+    btn.onClick(f);
+
+    return btn
+}//End of make button function
+
