@@ -3,7 +3,6 @@ kaboom({
     width: 500, 
     height: 500,
     canvas: document.getElementById("gameCanvas"), 
-    font: "comic-sans",
     background: [243, 255, 162],
     stretch: false,
     letterbox: false,
@@ -16,33 +15,48 @@ loadSprite("slime", "blue-slime.png", {
     sliceX: 1,
     sliceY: 1,
 });
+loadSprite("adventurer", "grey-square.png");
 
 //All Scenes:
-//Game scene
-scene("game", () =>{
-    const mc = add([
-        sprite("mc"),
-        pos(250, 250),
-        area(),
-        body(),
+//Game scenes
+scene("lvl1", () =>{
     
-    ])
+    loadShop();
     
-    add([
-        sprite("slime"),
-        pos(0, 0),
-        area({scale: 0.3, offset: 4}),
-        scale(7),
-        //body(),
-    ])
+    wait(2, ()=> {
+        destroyAll("closedDoor")
+        addAdv()
+        
+    })
+
+
+
+
 });
 
 //Main page
 scene("main-page", ()=>{
 
-    addButton("Play", vec2(width()/2, height()-200), () => go("game"));
-    addButton("Level Select", vec2(width()/2, height()-140), () => go("level-select"));
-    addButton("Credits", vec2(width()/2, height()-80), () => go("credits"));
+    add([
+        pos(width()/2, height()/3),
+        rect(width()*2/3, height()/2),
+        area(),
+        anchor("center"),
+        //color(17,42,70),
+        outline(4),
+    ]);
+
+    add([
+        pos(width()/2, height()/3),
+        text("Slime Frontier"),
+        anchor("center"),
+        //color(17,42,70),
+        color(0,0,0),
+    ]);
+
+    addButton("Play", vec2(width()/2, height()-160), () => go("lvl1"));
+    addButton("Level Select", vec2(width()/2, height()-100), () => go("level-select"));
+    addButton("Credits", vec2(width()/2, height()-40), () => go("credits"));
 });
 
 //Credits page
@@ -69,6 +83,7 @@ scene("level-select", () => {
 go("main-page");
 
 //Functions:
+//Adds a button with parameter of text contained, position, function that happens when clicked
 function addButton(txt, p, f) {
     // add a parent background object
     const btn = add([
@@ -105,3 +120,96 @@ function addButton(txt, p, f) {
     return btn
 }//End of make button function
 
+//Loads the shop with the shelves, door, counter, and mc
+function loadShop(){
+    // the playable character
+    const mc = add([
+        sprite("mc"),
+        pos(width()/2, height()-25),
+        anchor("center"),
+        area(),
+        body(),
+    ])
+    //left shelf outer part
+    add([
+        rect(50,height()-200),
+        pos(0,100),
+        color(205, 138, 45),
+        area(),
+        body({isStatic: true}),
+        "shelf",
+    ]);
+    //left shelf inner part
+    add([
+        rect(30,height()-220),
+        pos(10,110),
+        color(117, 79, 26),
+        area(),
+        body({isStatic: true}),
+        "shelf",
+    ]);
+    //right shelf outer part
+    add([
+        rect(50,height()-200),
+        anchor("topright"),
+        pos(width(),100),
+        color(205, 138, 45),
+        area(),
+        body({isStatic: true}),
+        "shelf",
+    ]);
+    //right shelf inner part
+    add([
+        rect(30,height()-220),
+        anchor("topright"),
+        pos(width()-10,110),
+        color(117, 79, 26),
+        area(),
+        body({isStatic: true}),
+        "shelf",
+    ]);
+    //open door 
+    add([
+        rect(100, 50),
+        anchor("top"),
+        pos(width()/2,0),
+        color(128, 211, 214),
+        "openDoor",
+    ]);
+    //closed door
+    add([
+        rect(100, 50),
+        anchor("top"),
+        pos(width()/2,0),
+        color(135, 13, 13),
+        "closedDoor",
+    ]);
+    //door knob
+    add([
+        circle(6),
+        color(0,0,0),
+        pos(width()/2 +30, 25),
+        "closedDoor",
+    ]);
+    //store counter or table
+    add([
+        rect(width()/2, 40),
+        anchor("center"),
+        pos(width()/2, height()-70),
+        color(132, 104, 57),
+        area(),
+        body({ isStatic: true}),
+        "table",
+    ]);
+}//End of loadShop function
+
+//Loads an adventurer at the door
+function addAdv(){
+    add([
+        sprite("adventurer"),
+        pos(width()/2, 16),
+        anchor("center"),
+        area(),
+        body({isStatic: true}),
+    ]);
+}//End of addAdv function
