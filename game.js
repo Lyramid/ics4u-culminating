@@ -11,32 +11,133 @@ kaboom({
 //Load Assets:
 loadSprite("man", "blank-pfp.png");
 loadSprite("mc", "blue-square.png");
-loadSprite("slime", "blue-slime.png", {
-    sliceX: 1,
-    sliceY: 1,
-});
+loadSprite("slime", "blue-slime.png");
 loadSprite("adventurer", "grey-square.png");
+loadSprite("adv-talk", "grey-square-talk.png");
 
 //All Scenes:
+//Talking Scene
+scene("talk", () =>{
+
+    //loadTalk();
+    
+        //mc talking head
+        add([
+            sprite("mc"),
+            anchor("botleft"),
+            pos(10, height()-10),
+            scale(4),
+        ])
+        //adventurer talking head
+        add([
+            sprite("adv-talk"),
+            anchor("botright"),
+            pos(width()-10, height()-10),
+            scale(4),
+        ])
+        //speach bubble triangle
+        add([
+            pos(width()/2, 250),
+            polygon([vec2(0, 0), vec2(50, 0), vec2(80, 60)]),
+            outline(4),
+            area(),
+        ])
+        //Speech Bubble
+        add([
+            rect(width()-50, 200, { radius: 10}),
+            anchor("center"),
+            outline(4),
+            pos(width()/2, 150),
+        ])
+        //Instructions text
+        add([
+            pos(width()/2, 20),
+            text("Click to Continue"),
+            color(0,0,0),
+            scale(0.5),
+            anchor("top")
+        ])
+
+    //Picking Adventurer Sentences based on the currentlvl variable
+    let dialogue = [];
+    switch (currentlvl){
+        case 1:
+            dialogue = ["Hello", "Convo2", "Convo3", "4", "5"];
+            break;
+        case 2:
+            dialogue = ["Hello again", "This is 2nd lvl dialogue", "kekw"];
+            break;
+    }
+
+    let i = 0;
+    add([
+        pos(width()/2, 150),
+        text(dialogue[i]),
+        anchor("center"),
+        color(0,0,0),
+        "dialogue"
+    ]);
+
+    onClick(()=>{
+        if(i < dialogue.length){
+            destroyAll("dialogue");
+            i++;
+        }
+        else{
+            go("lvlEnd")
+        }
+    });
+
+    onDestroy("dialogue", ()=>{
+        add([
+            pos(width()/2, 150),
+            text(dialogue[i]),
+            anchor("center"),
+            color(0,0,0),
+            "dialogue"
+        ]);
+    })
+});//End of talk scene
+
+//End of level scene
+scene("lvlEnd", () =>{
+    loadShop();
+    destroyAll("closedDoor");
+    destroyAll("closedDoorKnob");
+    addAdvExit();
+})//End of level end scene
+
+
 //Game scenes
 scene("lvl1", () =>{
-    
+
     loadShop();
-    
-    wait(2, ()=> {
-        destroyAll("closedDoor")
-        addAdv()
-        
+
+    //Open door after a bit
+    wait(2, () => {
+        //need them to have seperate tags to trigger the npc load only once
+        destroyAll("closedDoor"),
+        destroyAll("closedDoorKnob")
+    });
+
+    onDestroy("closedDoor", () => {
+        const adv1 = addAdvEnter()
+    });
+
+    onCollide("adv1", "table", () =>{
+        wait(1, () => {
+            currentlvl = 1;
+            go("talk")
+        });
+
     })
 
-
-
-
-});
+});//End of level 1 scene
 
 //Main page
 scene("main-page", ()=>{
-
+    
+    //Title container
     add([
         pos(width()/2, height()/3),
         rect(width()*2/3, height()/2),
@@ -46,6 +147,7 @@ scene("main-page", ()=>{
         outline(4),
     ]);
 
+    //Title text
     add([
         pos(width()/2, height()/3),
         text("Slime Frontier"),
@@ -54,10 +156,12 @@ scene("main-page", ()=>{
         color(0,0,0),
     ]);
 
+    //Buttons to get to other scenes
     addButton("Play", vec2(width()/2, height()-160), () => go("lvl1"));
     addButton("Level Select", vec2(width()/2, height()-100), () => go("level-select"));
     addButton("Credits", vec2(width()/2, height()-40), () => go("credits"));
-});
+
+});//End of main page
 
 //Credits page
 scene("credits", () =>{
@@ -72,15 +176,19 @@ scene("credits", () =>{
         color(0,0,0),
     ])
 
+    addButton("talking", vec2(width()/2, height()-150), () => go("talk"));
     addButton("Back", vec2(width()/2, height()-100), () => go("main-page"));
-});
+});//End of credits page
 
 //Level Select page
 scene("level-select", () => {
     addButton("Back", vec2(width()/2, height()-100), () => go("main-page"));
-});
-//Inital page load
+});//End of Level Select page
+
+//Inital page load and tasks
 go("main-page");
+currentlvl = 1;
+
 
 //Functions:
 //Adds a button with parameter of text contained, position, function that happens when clicked
@@ -189,7 +297,7 @@ function loadShop(){
         circle(6),
         color(0,0,0),
         pos(width()/2 +30, 25),
-        "closedDoor",
+        "closedDoorKnob",
     ]);
     //store counter or table
     add([
@@ -203,13 +311,71 @@ function loadShop(){
     ]);
 }//End of loadShop function
 
+//Load talking heads drawings
+function loadTalk(){
+    //mc talking head
+    add([
+        sprite("mc"),
+        anchor("botleft"),
+        pos(10, height()-10),
+        scale(4),
+    ])
+    //adventurer talking head
+    add([
+        sprite("adv-talk"),
+        anchor("botright"),
+        pos(width()-10, height()-10),
+        scale(4),
+    ])
+    //speach bubble triangle
+    add([
+        pos(width()/2, 250),
+        polygon([vec2(0, 0), vec2(50, 0), vec2(80, 60)]),
+        outline(4),
+        area(),
+    ])
+    //Speech Bubble
+    add([
+        rect(width()-50, 200, { radius: 10}),
+        anchor("center"),
+        outline(4),
+        pos(width()/2, 150),
+    ])
+    //Instructions text
+    add([
+        pos(width()/2, 20),
+        text("Click to Continue"),
+        color(0,0,0),
+        scale(0.5),
+        anchor("top")
+    ])
+}//End of loadTalk function
+
 //Loads an adventurer at the door
-function addAdv(){
+function addAdvEnter(){
     add([
         sprite("adventurer"),
         pos(width()/2, 16),
         anchor("center"),
         area(),
-        body({isStatic: true}),
+        body(),
+        "adv1",
+        z(-1),
+        move(DOWN, 100)
     ]);
 }//End of addAdv function
+
+//Loads an adventurer at the door
+function addAdvExit(){
+    add([
+        sprite("adventurer"),
+        pos(width()/2, height()-90),
+        anchor("bot"),
+        area(),
+        body(),
+        "adv1",
+        z(-1),
+        move(UP, 100)
+    ]);
+}//End of addAdv function
+
