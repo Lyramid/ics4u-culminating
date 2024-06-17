@@ -8,6 +8,9 @@ kaboom({
     letterbox: false,
 });
 
+MAXLEVEL = 3;
+let username = null;
+
 //Load Assets:
 loadSprite("man", "blank-pfp.png");
 loadSprite("mc", "blue-square.png");
@@ -62,21 +65,27 @@ scene("talk", () =>{
     let dialogue = [];
     switch (currentlvl){
         case 1:
-            dialogue = ["Hello", "Convo2", "Convo3", "4", "5"];
+            dialogue = ["Hello "+username, "I can't believe there is a shop already", "It feels like just yesterday when we entered the dungeon (it was)", "Can I buy a health potion from you?", "5 coins? Who do you think I am?", "Never mind, I'll just take my chances without"];
             break;
         case 2:
-            dialogue = ["Hello again", "This is 2nd lvl dialogue", "kekw"];
+            dialogue = ["Hello again", "So about that health potion?", "Yea I encountered a pig right outside the town", "I'm beat up? No you're beat up", "10 GOLD?! You must be joking", "I'll take my buisness else where"];
+            break;
+        case 3:
+            dialogue = ["Hi", "I'm here to tell you my father died yesterday", "Yes, it was due to the pig", "It was his dying wish for me to avenge him", "I require a health potion to grant his wish", "15 COINS!?! You're a sicko", username+" eh, my family will always remember you and your decendents", "We will make you and future generations pay for the crimes of their forefathers"];
             break;
     }
 
     let i = 0;
     add([
         pos(width()/2, 150),
-        text(dialogue[i]),
+        text(dialogue[i], {
+            width: 400
+        }),
         anchor("center"),
         color(0,0,0),
         "dialogue"
     ]);
+    i++;
 
     onClick(()=>{
         if(i < dialogue.length){
@@ -86,12 +95,15 @@ scene("talk", () =>{
         else{
             go("lvlEnd")
         }
+
     });
 
     onDestroy("dialogue", ()=>{
         add([
             pos(width()/2, 150),
-            text(dialogue[i]),
+            text(dialogue[i], {
+                width: 400
+            }),
             anchor("center"),
             color(0,0,0),
             "dialogue"
@@ -105,11 +117,43 @@ scene("lvlEnd", () =>{
     destroyAll("closedDoor");
     destroyAll("closedDoorKnob");
     addAdvExit();
+
+    onDestroy("adv1", () =>{
+        if(currentlvl < MAXLEVEL){
+            currentlvl++
+            go("lvlStart")
+        }
+        else{
+            go("win")
+        }
+    })
 })//End of level end scene
 
+//Win scene so there is some sort of ending for now
+scene("win", () => {
+    add([
+        text("You Win??? That is the game for now", {
+            width: 400
+        }),
+        pos(width()/2,height()/2),
+        anchor("center"),
+        color(0, 0, 0)
+    ])
+    
+    addButton("Main Menu", vec2(width()/2, height()-100), () => go("main-page"));
+    //for some reason the button above would run the fuction once you get to the page, and seems to get fixed
+    //when another button is here (but doesn't work if the win button code line is above the main page one)
+    //addButton("Filler", vec2(width()/2, height()+100), go("win"));
+})
 
 //Game scenes
-scene("lvl1", () =>{
+scene("lvlStart", () =>{
+
+    while(username==null || username ==""){
+        setData(username, prompt("What is your name, adventurer?"));
+        username = getData(username);
+    }
+
 
     loadShop();
 
@@ -126,7 +170,6 @@ scene("lvl1", () =>{
 
     onCollide("adv1", "table", () =>{
         wait(1, () => {
-            currentlvl = 1;
             go("talk")
         });
 
@@ -134,9 +177,10 @@ scene("lvl1", () =>{
 
 });//End of level 1 scene
 
+
 //Main page
 scene("main-page", ()=>{
-    
+    currentlvl = 1;
     //Title container
     add([
         pos(width()/2, height()/3),
@@ -157,9 +201,10 @@ scene("main-page", ()=>{
     ]);
 
     //Buttons to get to other scenes
-    addButton("Play", vec2(width()/2, height()-160), () => go("lvl1"));
-    addButton("Level Select", vec2(width()/2, height()-100), () => go("level-select"));
-    addButton("Credits", vec2(width()/2, height()-40), () => go("credits"));
+    addButton("Play", vec2(width()/2, height()-180), () => go("lvlStart"));
+    addButton("Level Select", vec2(width()/2, height()-130), () => go("level-select"));
+    addButton("Credits", vec2(width()/2, height()-80), () => go("credits"));
+    addButton("Delete Data", vec2(width()/2, height()-30), () =>{localStorage.clear(), debug.log("deleted")});
 
 });//End of main page
 
@@ -176,18 +221,21 @@ scene("credits", () =>{
         color(0,0,0),
     ])
 
-    addButton("talking", vec2(width()/2, height()-150), () => go("talk"));
+    //addButton("Delete Data", vec2(width()/2, height()-150), () =>{localStorage.clear(), debug.log("deleted")});
     addButton("Back", vec2(width()/2, height()-100), () => go("main-page"));
 });//End of credits page
 
 //Level Select page
 scene("level-select", () => {
+    addButton("Level 1", vec2(width()/2, height() - 400), () =>{go("lvlStart"), currentlvl =1})
+    addButton("Level 2", vec2(width()/2, height()-350), () => {go("lvlStart"), currentlvl=2})
+    addButton("Level 3", vec2(width()/2, height()-300), () => {go("lvlStart"), currentlvl=3})
     addButton("Back", vec2(width()/2, height()-100), () => go("main-page"));
 });//End of Level Select page
 
 //Inital page load and tasks
 go("main-page");
-currentlvl = 1;
+
 
 
 //Functions:
@@ -375,7 +423,8 @@ function addAdvExit(){
         body(),
         "adv1",
         z(-1),
-        move(UP, 100)
+        move(UP, 100),
+        offscreen({ destroy: true})
     ]);
 }//End of addAdv function
 
