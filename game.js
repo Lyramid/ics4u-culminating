@@ -12,11 +12,11 @@ MAXLEVEL = 3;
 let username = null;
 
 //Load Assets:
-loadSprite("man", "blank-pfp.png");
-loadSprite("mc", "blue-square.png");
-loadSprite("slime", "blue-slime.png");
-loadSprite("adventurer", "grey-square.png");
-loadSprite("adv-talk", "grey-square-talk.png");
+loadSprite("man", "./assets/blank-pfp.png");
+loadSprite("mc", "./assets/blue-square.png");
+loadSprite("slime", "./assets/blue-slime.png");
+loadSprite("adventurer", "./assets/grey-square.png");
+loadSprite("adv-talk", "./assets/grey-square-talk.png");
 
 //All Scenes:
 //Talking Scene
